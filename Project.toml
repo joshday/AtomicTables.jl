@@ -1,0 +1,10 @@
+name = "AtomicTables"
+uuid = "3dd36327-24ca-58ee-a371-c8b2ab849368"
+authors = ["Josh Day <emailjoshday@gmail.com>"]
+version = "0.1.0"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
