@@ -52,9 +52,11 @@ Base.filter(f::Base.Callable, t::CTable; sel=All()) = t[findall(f, select(t, sel
 function dropmissing(t::CTable; sel=All())
     t2 = select(t, sel)
     nms = findall(T -> Missing <: T, map(eltype, columns(t2)))
+    isempty(nms) && return t
     t3 = select(t2, Tuple(nms))
     idxs = findall(x -> any(ismissing,x), t3)
     t4 = t[setdiff(1:length(t), idxs)]
+    CTable(map(x -> convert(Vector{Base.nonmissingtype(eltype(x))}, x), columns(t4)))
 end
 
 #-----------------------------------------------------------------------# Tables
