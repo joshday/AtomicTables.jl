@@ -2,5 +2,5 @@ using AtomicTables
 using Test
 
 @testset "AtomicTables.jl" begin
-    # Write your own tests here.
+t = AtomicTables.fakedata(100)
 end
