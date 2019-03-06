@@ -5,7 +5,8 @@ using Tables: columns, ColumnTable
 import Tables
 
 
-export rows, columns, CTable, select, nrows, ncols, head, tail
+export rows, columns, select, nrows, ncols, head, tail, collectall,
+    CTable, All, Not, Between
 
 #-----------------------------------------------------------------------# utils
 # Generate a name different from the provided names

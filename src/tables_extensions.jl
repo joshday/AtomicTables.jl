@@ -14,6 +14,7 @@ function print_table(io, t)
         printstyled(io, "$(ncols(t) - i) columns missing from printout\n", color=:yellow)
         print(io, Markdown.plain(markdowntable(t, tuple(1:i...), nrows=n)))
     end
+    n < length(t) && print(io, "  ⋮")
 end
 
 function markdowntable(t, sel = All(); nrows::Int=20, types=true)
