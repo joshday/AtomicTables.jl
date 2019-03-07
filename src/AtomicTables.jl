@@ -1,7 +1,10 @@
 module AtomicTables
 
 using Markdown
+
+using OrderedCollections: OrderedDict
 using Tables: columns, ColumnTable
+
 import Tables
 
 
