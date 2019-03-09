@@ -64,6 +64,7 @@ getkeys(t::ColumnTable, sel::Tuple) = Tuple(union(map(x -> getkeys(t, x), sel)..
 getkeys(t::ColumnTable, sel::Integer) = tuple(keys(t)[sel])
 getkeys(t::ColumnTable, sel::Symbol) = tuple(sel)
 getkeys(t::ColumnTable, sel::Type) = Tuple(findall(x -> eltype(x) <: sel, t))
+getkeys(t::ColumnTable, sel::Nothing) = tuple()
 function getkeys(t::ColumnTable, sel::Union{String, Regex})
     inds = findall(x -> occursin(sel, string(x)), keys(t))
     Tuple(collect(keys(t))[inds])

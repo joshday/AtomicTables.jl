@@ -5,7 +5,7 @@ using Markdown
 using OrderedCollections: OrderedDict
 using Tables: columns, ColumnTable
 
-import Tables
+import Tables, OnlineStatsBase
 
 
 export rows, columns, select, nrows, ncols, head, tail, collectall, colnames,

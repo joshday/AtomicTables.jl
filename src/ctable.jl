@@ -79,7 +79,7 @@ Tables.istable(::Type{<:CTable}) = true
 Tables.columnaccess(::Type{<:CTable}) = true
 Tables.columns(c::CTable) = getfield(c, :columns)
 Tables.rowaccess(::Type{<:CTable}) = true
-Tables.rows(c::CTable) = c
+# Tables.rows(c::CTable) = c
 Tables.schema(c::CTable) = Tables.schema(columns(c))
 Tables.materializer(c::CTable) = CTable
 
@@ -104,23 +104,33 @@ function fakedata(n = 100)
     CTable(data)
 end
 
-#-----------------------------------------------------------------------# groupreduce
-function groupreduce(f::Base.Callable, t::CTable, by; sel=Not(by), init=nothing)
-    a = select(t, by)
-    b = select(t, sel)
-    # b = sel isa Symbol ? columns(t)[sel] : select(t, sel)
-    T = Union{typeof(f(b[1], b[2])), typeof(b[1])}
-    out = OrderedDict{eltype(a), T}()
-    for (grouprow, row) in zip(a, b)
-        if haskey(out, grouprow)
-            out[grouprow] = f(out[grouprow], row)
-        else
-            out[grouprow] = isnothing(init) ? row : f(init, row)
-        end
-    end
-    groups = CTable(collect(keys(out)))
-    vals = collect(values(out))
-    groups, vals
+#-----------------------------------------------------------------------# reduce
+reducer_name(f, sel) = Symbol("$f($sel)")
+reducer_name(f::OnlineStatsBase.OnlineStat, sel) = Symbol("$(typeof(f))($sel)")
+
+function OnlineStatsBase.fit!(o::OnlineStatsBase.OnlineStat, t::CTable)
+
 end
 
-reducername(f) = Symbol("$f($sel)")
+# function reduce(f, t::CTable; by=nothing, sel=Not(nothing), init=nothing)
+#     isnothing(by) && return reduce(f, rows(select(t, sel)), init=init)
+# end
+
+# function groupreduce(f::Base.Callable, t::CTable, by; sel=Not(by), init=nothing)
+#     a = select(t, by)
+#     b = select(t, sel)
+#     # b = sel isa Symbol ? columns(t)[sel] : select(t, sel)
+#     T = Union{typeof(f(b[1], b[2])), typeof(b[1])}
+#     out = OrderedDict{eltype(a), T}()
+#     for (grouprow, row) in zip(a, b)
+#         if haskey(out, grouprow)
+#             out[grouprow] = f(out[grouprow], row)
+#         else
+#             out[grouprow] = isnothing(init) ? row : f(init, row)
+#         end
+#     end
+#     groups = CTable(collect(keys(out)))
+#     vals = collect(values(out))
+#     groups, vals
+# end
+
