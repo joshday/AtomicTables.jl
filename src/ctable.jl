@@ -1,3 +1,4 @@
+
 """
     CTable(x, meta = Dict())
 
@@ -84,11 +85,26 @@ Tables.schema(c::CTable) = Tables.schema(columns(c))
 Tables.materializer(c::CTable) = CTable
 
 #-----------------------------------------------------------------------# show
+global SHOWCOMPACT = false
+
 function Base.show(io::IO, ::MIME"text/plain", t::CTable)
-    println(io, "CTable ($(nrows(t)) rows × $(ncols(t)) columns)")
-    print_table(io, t)
+    print(io, "CTable ($(nrows(t)) × $(ncols(t)))")
+    if SHOWCOMPACT
+        for ky in colnames(t)
+            println(io)
+            print(io, "    $ky ")
+            printstyled(io, "($(eltype(getproperty(t, ky))))"; color=:light_black)
+        end
+    else
+        println(io)
+        print_table(io, t)
+    end
 end
 
+function showstyle!(flag = !SHOWCOMPACT)
+    global SHOWCOMPACT
+    SHOWCOMPACT = flag
+end
 
 #-----------------------------------------------------------------------# generate data
 function fakedata(n = 100)
