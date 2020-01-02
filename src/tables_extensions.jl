@@ -60,6 +60,7 @@ select(t::ColumnTable, sel::NTuple{N,Symbol}) where {N} = NamedTuple{sel}(t)
 select(t, sel, sink=Tables.materializer(t)) = sink(select(Tables.columntable(t), sel))
 select(t::ColumnTable, sel) = select(t, getkeys(t, sel))
 
+# Transform selector to keys of the table
 getkeys(t::ColumnTable, sel::Tuple) = Tuple(union(map(x -> getkeys(t, x), sel)...))
 getkeys(t::ColumnTable, sel::Integer) = tuple(keys(t)[sel])
 getkeys(t::ColumnTable, sel::Symbol) = tuple(sel)
@@ -70,13 +71,11 @@ function getkeys(t::ColumnTable, sel::Union{String, Regex})
     Tuple(collect(keys(t))[inds])
 end
 
-#-----------------------------------------------------------------------# AbstractSelector
-abstract type AbstractSelector end
-
-struct All <: AbstractSelector end
+#-----------------------------------------------------------------------# Selectors
+struct All end
 getkeys(t, sel::All) = keys(t)
 
-struct Not{T} <: AbstractSelector
+struct Not{T}
     items::T
 end
 Not(sel::Union{Symbol, Type, String, Regex}) = Not(tuple(sel))
@@ -86,7 +85,7 @@ function getkeys(t, sel::Not)
     Tuple(setdiff(keys(t), kys))
 end
 
-struct Between <: AbstractSelector
+struct Between
     first::Symbol
     last::Symbol
 end

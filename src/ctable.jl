@@ -93,7 +93,7 @@ function Base.show(io::IO, ::MIME"text/plain", t::CTable)
         for ky in colnames(t)
             println(io)
             print(io, "    $ky ")
-            printstyled(io, "($(eltype(getproperty(t, ky))))"; color=:light_black)
+            printstyled(io, "$(eltype(getproperty(t, ky)))"; color=:light_black)
         end
     else
         println(io)
