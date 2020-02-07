@@ -16,17 +16,15 @@ optionally with metadata `meta`.
 struct CTable{T, C<:ColumnTable} <: AbstractVector{T}
     columns::C
     meta::Dict
-    _pkey::Vector{Symbol}
     function CTable(x, meta = Dict())
         c = columns(x)
         T = NamedTuple{keys(c), Tuple{map(eltype, c)...}}
-        new{T, typeof(c)}(c, meta, Symbol[])
+        new{T, typeof(c)}(c, meta)
     end
 end
 
 Base.getindex(t::CTable, i::Integer) = map(x -> x[i], columns(t))
 Base.getindex(t::CTable, i::AbstractVector{<:Integer}) = CTable(map(x -> x[i], columns(t)))
-Base.getindex(t::CTable, i::Symbol) = getproperty(t, i)
 function Base.setindex!(t::CTable, val, i::Integer)
     for (c, v) in zip(columns(t), val)
         c[i] = v
@@ -64,7 +62,7 @@ colnames(t::CTable) = keys(columns(t))
 "Create a new CTable with each column `collect`-ed."
 collectall(t::CTable) = CTable(map(collect, columns(t)))
 
-# How does fallback method for AbstractVector compare to this?
+# How does fallback method compare to this?
 # Base.filter(f::Base.Callable, t::CTable; sel=All()) = t[findall(f, select(t, sel))]
 
 function dropmissing(t::CTable; sel=All())
@@ -106,11 +104,10 @@ end
 function showstyle!(flag = !SHOWCOMPACT)
     global SHOWCOMPACT
     SHOWCOMPACT = flag
-    nothing
 end
 
 #-----------------------------------------------------------------------# generate data
-function fakedata(n = 1000)
+function fakedata(n = 100)
     data = (
         x1 = rand(1:10, n),
         x2 = rand(n),
