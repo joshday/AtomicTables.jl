@@ -2,9 +2,12 @@
 function Base.show(io::IO, t::CTable)
     n = length(t)
     printstyled(io, "CTable ", bold=true)
-    printstyled(io, "($n × $(ncols(t)))\n"; color=:light_black)
+    printstyled(io, "($n × $(ncols(t)))"; color=:light_black)
+
+    isempty(t) && return
 
     nr, nc = displaysize(io)
+    println(io)
     
     rows_omitted = length(t) - nr + 6
 
@@ -53,22 +56,4 @@ function Base.show(io::IO, t::CTable)
     cols_omitted = length(cols(t)) - length(cols2show)
 
     cols_omitted > 0 && printstyled(io, "  (Cols Omitted: ", cols_omitted, ")", color=:cyan)
-end
-
-
-#-----------------------------------------------------------------------------# show_schema
-show_schema(t::CTable) = show_schema(stdout, t)
-
-function show_schema(io::IO, t::CTable)
-    printstyled(io, "CTable ", bold=true)
-    printstyled(io, "($(nrows(t)) × $(ncols(t)))"; color=:light_black)
-
-    n = maximum(length(string(k)) for k in keys(cols(t)))
-    
-    for (k, v) in pairs(cols(t))
-        printstyled(io, "\n", k; color=:light_green)
-        foreach(x -> print(io, ' '), 1:(n - length(string(k))))
-        printstyled(io, " | ", color=:light_black)
-        printstyled(io, typeof(v); color=:cyan)
-    end
 end

@@ -1,5 +1,5 @@
 # Fallback: Collection of selections
-select(t::CTable, sel) = mapreduce(x -> select(t, x), merge, sel)
+select(t::CTable, sel) = isempty(sel) ? CTable(NamedTuple()) : mapreduce(x -> select(t, x), merge, sel)
 
 #-----------------------------------------------------------------------------# field name/index
 field_name(t::CTable, sel) = error("Selection $sel returns multiple field names.")
@@ -19,8 +19,15 @@ select(t::CTable, sel::Type) = select(t, keys(t)[collect(map(x -> eltype(x) <: s
 
 select(t::CTable, sel::Regex) = select(t, filter(x -> occursin(sel, string(x)), keys(t)))
 
+#-----------------------------------------------------------------------------# Col 
+struct Col{T} 
+    sel::T 
+end
+select(t::CTable, c::Col) = cols(t)[field_name(t, c.sel)]
 
-
+#-----------------------------------------------------------------------------# All 
+struct All end 
+select(t::CTable, ::All) = t
 
 #-----------------------------------------------------------------------------# Not 
 struct Not{T}
@@ -57,3 +64,10 @@ struct Between{T, S}
     last::S
 end
 select(t::CTable, b::Between) = select(t, field_index(t, b.first):field_index(t, b.last))
+
+#-----------------------------------------------------------------------------# And 
+struct And{T}
+    sel::T
+end 
+And(args...) = And(args)
+select(t::CTable, a::And) = mapreduce(x -> select(t, x), (a,b) -> select(a, intersect(keys(a), keys(b))), a.sel)
