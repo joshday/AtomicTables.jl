@@ -28,6 +28,13 @@ function markdowntable(t, sel = All(); nrows::Int=20, types=true)
     Markdown.Table(out, fill(:l, length(out[1])))
 end
 
+#-----------------------------------------------------------------------------# printnames
+function printnames(io::IO, t)
+    
+end
+
+printnames(t) = printnames(stdout, t)
+
 #-----------------------------------------------------------------------# select
 # Every selection needs a getkeys method that returns a tuple of Symbols
 

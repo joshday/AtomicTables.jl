@@ -1,18 +1,3 @@
-
-"""
-    CTable(x, meta = Dict())
-
-Construct a columnar table from an object `x` that satisfies the Tables.jl interface,
-optionally with metadata `meta`.
-
-# Example
-
-    CTable([(x=1,y=2), (x=3,y=4)])
-
-    using CSV
-    path = joinpath(dirname(pathof(AtomicTables)), "..", "data", "diamonds.csv")
-    CTable(CSV.File(path))
-"""
 struct CTable{T, C<:ColumnTable} <: AbstractVector{T}
     columns::C
     meta::Dict
