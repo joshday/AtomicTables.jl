@@ -42,7 +42,7 @@ CTable(x::AbstractMatrix) = CTable(eachcol(x)...)
 cols(t::CTable) = getfield(t, :cols)
 
 schema(t::CTable) = CTable((
-    field = collect(keys(t)), 
+    field = collect(names(t)), 
     type = collect(map(typeof, cols(t))),
     eltype = collect(map(eltype, cols(t)))
 ))
@@ -57,7 +57,7 @@ function rename(t::CTable, old_new::Pair...)
     for old_new in old_new
         old_key = field_name(t, old_new[1])
         new_key = field_name(t, old_new[2])
-        names = collect(keys(t))
+        names = collect(names(t))
         i = findfirst(==(old_key), names)
         names[i] = new_key
         t = CTable(namedtuple(names, cols(t)))
@@ -68,18 +68,19 @@ end
 #-----------------------------------------------------------------------------# Base
 Base.summary(t::CTable) = "CTable ($(nrows(t)) × $(ncols(t)))"
 Base.length(t::CTable) = isempty(t) ? 0 : length(cols(t)[1])
-Base.pairs(t::CTable) = pairs(cols(t))
-Base.keys(t::CTable) = keys(cols(t))
+
+Base.names(t::CTable) = keys(cols(t))
 Base.size(t::CTable) = (nrows(t), ncols(t))
 Base.size(t::CTable, i::Integer) = size(t)[i]
 Base.copy(t::CTable) = CTable(map(copy, cols(t)))
+Base.keys(t::CTable) = Base.LinearIndices(Base.OneTo(length(t)))
 
 Base.deleteat!(t::CTable, i) = (map(x -> deleteat!(x, i), cols(t)); t)
 Base.isempty(t::CTable) = all(isempty, cols(t))
 Base.hcat(a::CTable, b::CTable) = CTable(merge(cols(a), cols(b)))
 
 function Base.vcat(a::CTable, b::CTable; cols=false)
-    all(in.(keys(a), Ref(keys(b)))) || error("Cann")
+    all(in.(names(a), Ref(names(b)))) || error("Cannot vcat")
     CTable(map((k,v) -> vcat(v, cols(b)[k]), pairs(cols(a))))
 end
 
@@ -95,7 +96,7 @@ Base.getindex(t::CTable, i::AbstractVector{<:Integer}) = CTable(map(x -> x[i], c
 Base.getindex(t::CTable, x::Symbol) = cols(t)[x]
 Base.getindex(t::CTable, x::AbstractVector{Symbol}) = CTable(select(cols(t), x))
 function Base.setindex!(t::CTable, val, i::Integer)
-    for (k,v) in pairs(t)
+    for (k,v) in pairs(cols(t))
         v[i] = val[k]
     end
     val
@@ -104,18 +105,21 @@ Base.lastindex(t::CTable) = nrows(t)
 
 Base.getproperty(t::CTable, x::Symbol) = cols(t)[x]
 function Base.setproperty!(t::CTable, val, x::Symbol)
-    for (k, v) in pairs(t)
+    for (k, v) in pairs(cols(t))
         v[i] = getproperty(val, k)
     end
     val
 end
 
 Base.iterate(t::CTable, i=1) = i > length(t) ? nothing : (t[i], i + 1)
-Base.eltype(t::CTable) = NamedTuple{keys(t), Tuple{map(eltype, cols(t))...}}
+Base.eltype(t::CTable) = NamedTuple{names(t), Tuple{map(eltype, cols(t))...}}
 
 Base.merge(a::CTable, b::CTable) = CTable(merge(cols(a), cols(b)))
 
-function fake(::Type{CTable}, n = 1000)
+function Base.sort!(a::CTable, sel=All())
+end
+
+function fake(::Type{CTable}, n = 10_000)
     data = (
         x1 = rand(1:10, n),
         x2 = rand(n),
@@ -174,7 +178,7 @@ function Base.show(io::IO, t::CTable)
     cols2show = Vector{String}[]
 
     width = 0
-    for (k,v) in pairs(t)
+    for (k,v) in pairs(cols(t))
         vals = string.(vcat(k, v[1:min(n, nr - 6 - (rows_omitted > 0))]))
         width += maximum(length, vals) + 2
         width <= nc - 2 ? push!(cols2show, vals) : break
